@@ -2,6 +2,7 @@ import { fetchLocation, fetchWeather } from "@/api";
 import { weatherImages } from "@/constants";
 import { getData, storeData } from "@/util/asyncStorage";
 import { Feather, Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { debounce } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -26,6 +27,7 @@ export default function Index() {
   const [locatiion, setLocation] = useState([]);
   const [weather, setWeather] = useState([]);
   const [loading, setLoading] = useState(true);
+  const route = useRouter();
   const handleText = (text) => {
     if (text.length > 2)
       fetchLocation({ cityName: text }).then((data) => {
@@ -65,10 +67,10 @@ export default function Index() {
       }}
     >
       <Image
-        source={require("../assets/icons/bg.png")}
+        source={require("../assets/images/Background.jpg")}
         style={{ width: "100%", height: "100%", position: "absolute" }}
         resizeMode="cover"
-        blurRadius={70}
+        blurRadius={100}
       />
       {loading ? (
         <View
@@ -91,7 +93,7 @@ export default function Index() {
                 flexDirection: "row",
                 justifyContent: "flex-end",
                 borderColor: "transparent",
-                height: 50,
+                height: 58,
               }}
             >
               {showSearch ? (
@@ -112,7 +114,7 @@ export default function Index() {
               <TouchableOpacity
                 style={{
                   justifyContent: "center",
-                  backgroundColor: "rgba(255,255,255,0.3)",
+                  backgroundColor: "rgba(255,255,255,0.2)",
                   borderRadius: 30,
                   paddingHorizontal: wp(1.5),
                   margin: 1,
@@ -186,7 +188,7 @@ export default function Index() {
               }}
             >
               {location?.name},
-              <Text style={{ fontSize: hp(2.6), color: "lightgray" }}>
+              <Text style={{ fontSize: hp(2.6), color: "white" }}>
                 {" " + location?.country}
               </Text>
             </Text>
@@ -311,6 +313,27 @@ export default function Index() {
                       <TouchableOpacity
                         style={styles.tempTouchable}
                         key={index}
+                        onPress={() =>
+                          route.push({
+                            pathname: "forecast",
+                            params: {
+                              avgtemp_c: item?.day?.avgtemp_c,
+                              text: item?.day?.condition?.text,
+                              icon: item?.day?.condition?.icon,
+                              maxtemp_c: item?.day?.maxtemp_c,
+                              mintemp_c: item?.day?.mintemp_c,
+                              rainy: item?.day?.daily_chance_of_rain,
+                              dayName: dayName,
+                              maxwind_kph: item?.day?.maxwind_kph,
+                              avghumidity: item?.day?.avghumidity,
+                              sunrise: item?.astro?.sunrise,
+                              sunset: item?.astro?.sunset,
+                              moonrise: item?.astro?.moonrise,
+                              uv: item?.day?.uv,
+                              hours: item?.hour,
+                            },
+                          })
+                        }
                       >
                         <Image
                           source={{
@@ -346,9 +369,10 @@ const styles = StyleSheet.create({
     marginTop: hp(2.5),
     backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 20,
-    padding: 18,
+    // padding: 2,
     alignItems: "center",
     justifyContent: "center",
     gap: 5,
+    width: 100,
   },
 });
