@@ -1,10 +1,11 @@
 import { fetchLocation, fetchWeather } from "@/api";
 import { weatherImages } from "@/constants";
+import { ForecastContext } from "@/context/context";
 import { getData, storeData } from "@/util/asyncStorage";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { debounce } from "lodash";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
   Image,
   Platform,
@@ -27,6 +28,8 @@ export default function Index() {
   const [locatiion, setLocation] = useState([]);
   const [weather, setWeather] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { setselectedDay } = useContext(ForecastContext);
+
   const route = useRouter();
   const handleText = (text) => {
     if (text.length > 2)
@@ -34,6 +37,7 @@ export default function Index() {
         setLocation(data);
       });
   };
+
   const handleWeather = (loc) => {
     setLoading(true);
     setLocation([]);
@@ -56,6 +60,11 @@ export default function Index() {
       setLoading(false);
     });
   };
+  const handleNavigation = (item, dayName) => {
+    route.push({ pathname: "forecast", params: { dayName } });
+    setselectedDay(item);
+  };
+
   const handleDebounce = useCallback(debounce(handleText, 500), []);
   const { location, current } = weather;
   return (
@@ -294,7 +303,11 @@ export default function Index() {
               <View style={{ gap: 15, flexDirection: "row" }}>
                 <CalendarDaysIcon color={"white"} />
                 <Text
-                  style={{ color: "white", fontSize: hp(2), fontWeight: "500" }}
+                  style={{
+                    color: "white",
+                    fontSize: hp(2),
+                    fontWeight: "500",
+                  }}
                 >
                   Daily Forecast
                 </Text>
@@ -313,27 +326,7 @@ export default function Index() {
                       <TouchableOpacity
                         style={styles.tempTouchable}
                         key={index}
-                        onPress={() =>
-                          route.push({
-                            pathname: "forecast",
-                            params: {
-                              avgtemp_c: item?.day?.avgtemp_c,
-                              text: item?.day?.condition?.text,
-                              icon: item?.day?.condition?.icon,
-                              maxtemp_c: item?.day?.maxtemp_c,
-                              mintemp_c: item?.day?.mintemp_c,
-                              rainy: item?.day?.daily_chance_of_rain,
-                              dayName: dayName,
-                              maxwind_kph: item?.day?.maxwind_kph,
-                              avghumidity: item?.day?.avghumidity,
-                              sunrise: item?.astro?.sunrise,
-                              sunset: item?.astro?.sunset,
-                              moonrise: item?.astro?.moonrise,
-                              uv: item?.day?.uv,
-                              hours: item?.hour,
-                            },
-                          })
-                        }
+                        onPress={() => handleNavigation(item, dayName)}
                       >
                         <Image
                           source={{

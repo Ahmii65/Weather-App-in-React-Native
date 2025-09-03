@@ -1,30 +1,18 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { useContext } from "react";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getUVLabel } from "../constants/index";
+import { formatTime, getUVLabel } from "../constants/index";
+import { ForecastContext } from "../context/context";
 
 const forecast = () => {
-  const {
-    avgtemp_c,
-    text,
-    icon,
-    maxtemp_c,
-    mintemp_c,
-    rainy,
-    dayName,
-    maxwind_kph,
-    avghumidity,
-    sunrise,
-    sunset,
-    uv,
-    moonrise,
-    hour,
-  } = useLocalSearchParams();
+  const { dayName } = useLocalSearchParams();
+  const { selectedDay } = useContext(ForecastContext);
   return (
     <View style={{ flex: 1 }}>
       <Image
@@ -49,17 +37,17 @@ const forecast = () => {
           }}
         >
           <Image
-            source={{ uri: "https:" + icon }}
+            source={{ uri: "https:" + selectedDay?.day?.condition?.icon }}
             style={{ width: 55, height: 55 }}
           />
           <Text
             style={{ color: "white", fontWeight: "500", fontSize: hp(3.5) }}
           >
-            {avgtemp_c}
+            {selectedDay?.day?.avgtemp_c}
             {"\u00B0"}C
             <Text style={{ fontSize: hp(2.5), fontWeight: "300" }}>
               {"  "}
-              {text}
+              {selectedDay?.day?.condition?.text}
             </Text>
           </Text>
         </View>
@@ -70,7 +58,7 @@ const forecast = () => {
             color="red"
           />
           <Text style={styles.textone}>
-            {maxtemp_c}
+            {selectedDay?.day?.maxtemp_c}
             {"\u00B0"}C
             <Text style={styles.textsecond}>{"  "}Max Temprature</Text>
           </Text>
@@ -82,7 +70,7 @@ const forecast = () => {
             color="lightyellow"
           />
           <Text style={styles.textone}>
-            {mintemp_c}
+            {selectedDay?.day?.mintemp_c}
             {"\u00B0"}C
             <Text style={styles.textsecond}>{"  "}Min Temprature</Text>
           </Text>
@@ -90,7 +78,8 @@ const forecast = () => {
         <View style={[styles.tempContainer, { paddingTop: hp(1.8) }]}>
           <Ionicons name="rainy" size={30} color="white" />
           <Text style={styles.textone}>
-            {rainy}%<Text style={styles.textsecond}>{"  "}Chance of Rain</Text>
+            {selectedDay?.day?.daily_chance_of_rain}%
+            <Text style={styles.textsecond}>{"  "}Chance of Rain</Text>
           </Text>
         </View>
         <View
@@ -106,21 +95,25 @@ const forecast = () => {
               source={require("../assets/icons/wind.png")}
               style={{ width: 22, height: 22 }}
             />
-            <Text style={styles.uvViewText}>{maxwind_kph} Km</Text>
+            <Text style={styles.uvViewText}>
+              {selectedDay?.day?.maxwind_kph} Km
+            </Text>
           </View>
           <View style={{ flexDirection: "row" }}>
             <Image
               source={require("../assets/icons/drop.png")}
               style={{ width: 22, height: 22 }}
             />
-            <Text style={styles.uvViewText}>{avghumidity}%</Text>
+            <Text style={styles.uvViewText}>
+              {selectedDay?.day?.avghumidity}%
+            </Text>
           </View>
           <View style={{ flexDirection: "row" }}>
             <Image
               source={require("../assets/icons/sun.png")}
               style={{ width: 22, height: 22 }}
             />
-            <Text style={styles.uvViewText}>{sunrise}</Text>
+            <Text style={styles.uvViewText}>{selectedDay?.astro?.sunrise}</Text>
           </View>
         </View>
         <View
@@ -137,7 +130,7 @@ const forecast = () => {
               size={30}
               color="white"
             />
-            <Text style={styles.uvViewText}>{sunset}</Text>
+            <Text style={styles.uvViewText}>{selectedDay?.astro?.sunset}</Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <MaterialCommunityIcons
@@ -146,17 +139,46 @@ const forecast = () => {
               color="white"
             />
             <Text style={styles.uvViewText}>
-              {uv} {getUVLabel(uv)}
+              {selectedDay?.day?.uv} {getUVLabel(selectedDay?.day?.uv)}
             </Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <MaterialCommunityIcons
-              name="weather-sunny-alert"
+              name="brightness-2"
               size={30}
               color="white"
             />
-            <Text style={styles.uvViewText}>{moonrise}</Text>
+            <Text style={styles.uvViewText}>
+              {selectedDay?.astro?.moonrise}
+            </Text>
           </View>
+        </View>
+        <View style={{ paddingTop: hp(3) }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 5, gap: 10 }}
+          >
+            {selectedDay?.hour.map((item, index) => {
+              const dayTime = item?.time;
+              const timeOnly = dayTime.split(" ")[1];
+              return (
+                <View style={styles.tempTouchable} key={index}>
+                  <Image
+                    source={{
+                      uri: "https:" + item?.condition?.icon,
+                    }}
+                    style={styles.tempImage}
+                  />
+                  <Text style={styles.tempText}>{formatTime(timeOnly)}</Text>
+                  <Text style={styles.tempText}>
+                    {item?.temp_c}
+                    {"\u00B0"}C
+                  </Text>
+                </View>
+              );
+            })}
+          </ScrollView>
         </View>
       </SafeAreaView>
     </View>
@@ -183,5 +205,22 @@ const styles = StyleSheet.create({
     paddingLeft: wp(1.5),
     fontSize: hp(2),
     fontWeight: "500",
+  },
+  tempText: {
+    color: "white",
+    fontSize: hp(2),
+    fontWeight: "500",
+  },
+  tempImage: { width: 55, height: 55 },
+  tempTouchable: {
+    marginTop: hp(2.5),
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 20,
+    // padding: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    width: 100,
+    height: hp(20),
   },
 });
