@@ -16,10 +16,10 @@ const forecast = () => {
   return (
     <View style={{ flex: 1 }}>
       <Image
-        source={require("../assets/images/Background.jpg")}
+        source={require("../assets/images/Background.png")}
         style={{ width: "100%", height: "100%", position: "absolute" }}
         resizeMode="cover"
-        blurRadius={100}
+        blurRadius={70}
       />
       <SafeAreaView style={{ flex: 1, paddingHorizontal: wp(3) }}>
         <View style={{ alignItems: "center", paddingTop: hp(2) }}>

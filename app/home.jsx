@@ -4,6 +4,7 @@ import { ForecastContext } from "@/context/context";
 import { getData, storeData } from "@/util/asyncStorage";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { debounce } from "lodash";
 import { useCallback, useContext, useEffect, useState } from "react";
 import {
@@ -75,11 +76,12 @@ export default function Index() {
         width: wp(100),
       }}
     >
+      <StatusBar style="light" animated="true" />
       <Image
-        source={require("../assets/images/Background.jpg")}
+        source={require("../assets/images/Background.png")}
         style={{ width: "100%", height: "100%", position: "absolute" }}
         resizeMode="cover"
-        blurRadius={100}
+        blurRadius={70}
       />
       {loading ? (
         <View
